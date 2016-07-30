@@ -2,7 +2,6 @@ html, body, #container {
   height: 100%;
   width: 100%;
   overflow: hidden;
-  font-family: Roboto,sans-serif;
 }
 body {
   padding-top: 50px;
@@ -21,10 +20,10 @@ body {
     margin: auto;
     font-size: 14px;
     cursor: pointer;
-    color: #ccc;
+    color: #ffffff;
 }
 .ui-slider-container {
-  background-color: #fff;
+  background-color: #ffffff;
   padding: 10px;
   border-radius: 10px;
   box-shadow: 0 1px 5px rgba(0,0,0,0.65);
@@ -39,23 +38,23 @@ body {
   z-index: 10000 !important;
 }
 .navbar-inverse {
-  background-color: #1D2237;
-  border-color: #1D2237;
+  background-color: #F24F26;
+  border-color: #F24F26;
 }
 .navbar-inverse .navbar-nav li a {
-  color: #00dce1;
+  color: #ffffff;
 }
 .navbar-inverse .navbar-nav > .open > a, 
 .navbar-inverse .navbar-nav > .open > a:hover, 
 .navbar-inverse .navbar-nav > .open > a:focus {
-  color: #00dce1;
-  background-color: #374169;
+  color: #ffffff;
+  background-color: #F24F26;
 }
 .navbar-inverse .navbar-nav > li a > a:focus { 
-  color: #00dce1;;
+  color: #ffffff;;
 }
 .dropdown-menu {
-  background-color: #1D2237;
+  background-color: #F24F26;
 }
 #sidebar {
   width: 300px;
@@ -85,7 +84,7 @@ body {
   padding-top: 10px;
 }
 .lightblue {
-  color: #00dce1;
+  color: #ffffff;
 }
 .feature-row {
   cursor: pointer;
@@ -109,7 +108,7 @@ body {
 .navbar .navbar-brand {
   font-weight: bold;
   font-size: 25px;
-  color: #00dce1;
+  color: #ffffff;
 }
 .navbar-collapse.in {
   overflow-y: hidden;

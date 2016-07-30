@@ -1,15 +1,12 @@
 var map;
+var allLayers = {}
+var overlays = {}
 
 $(document).on("click", ".feature-row", function(e) {
   //$(document).off("mouseout", ".feature-row", clearHighlight);
-  sidebarClick(parseInt($(this).attr("id"), 10));
+  var thisLayer = allLayers[$(this).attr("id")]
+  addLayerToMap(thisLayer);
 });
-
-if ( !("ontouchstart" in window) ) {
-  $(document).on("mouseover", ".feature-row", function(e) {
-    highlight.clearLayers().addLayer(L.circleMarker([$(this).attr("lat"), $(this).attr("lng")], highlightStyle));
-  });
-}
 
 $("#about-btn").click(function() {
   $("#aboutModal").modal("show");
@@ -84,7 +81,6 @@ map = L.map("map", {
   attributionControl: false
 });
 
-
 /* GPS enabled geolocation control set to follow the user's location */
 var locateControl = L.control.locate({
   position: "bottomright",
@@ -129,9 +125,137 @@ var baseLayers = {
   "LIST Imagery": LISTAerial
 };
 
-var layerControl = L.control.layers(baseLayers, {}, {
+var layerControl = L.control.layers(baseLayers, overlays, {
   collapsed: isCollapsed
 }).addTo(map);
+
+var LISTRest = "http://services.thelist.tas.gov.au/arcgis/rest/services/"
+var GlenorchyWMS = "https://maps.gcc.tas.gov.au/geoserver/GCC_cc/ows"
+var CityOfLauncestonRest = "http://mapping.launceston.tas.gov.au/arcgis/rest/services/"
+var CityOfHobartRest = "https://services1.arcgis.com/NHqdsnvwfSTg42I8/arcgis/rest/services/"
+
+getWMS(GlenorchyWMS, {label:'glenorchy'})
+getArcGISREST(CityOfLauncestonRest, 'Public', {f: "pjson"}, {label: 'lcc'})
+getArcGISREST(LISTRest, 'Public', {f: "pjson"}, {label: 'list'})
+//getArcGISREST(CityOfHobartRest, '', {f: 'pjson'}, {label: 'hcc'})
+
+function getWMS(baseURL, options) {
+	$.get(baseURL + "?SERVICE=WMS&request=getcapabilities", function( xml ) {
+		$(xml).find("Layer").find("Layer").each(function() {
+			var title = $(this).find("Title").first().text();
+			var name = $(this).find("Name").first().text();
+
+			//Check for layer groups
+			var patt = new RegExp("Group");
+			var res = patt.test(title);
+			if (!res) {
+				var oneLayer = {
+					id: options.label + '-' + name,
+					group: "",
+					title: title
+				}
+				addLayerToList(oneLayer)
+				oneLayer.meta = {name: name}
+				oneLayer.url = baseURL
+				oneLayer.type = 'wms'
+				allLayers[oneLayer.id] = oneLayer
+			}
+		});
+	})
+}
+
+function getArcGISREST(baseURL, startLocation, params, options) {
+	$.getJSON(baseURL + startLocation, params, function( data ) {
+		var services = data.services
+		if (services != null) {
+			for (var i = services.length - 1; i >= 0; i--) {
+				if(services[i].type === "MapServer") {
+					var thisService = services[i]
+					var thisURL = baseURL + thisService.name + '/MapServer'
+					$.getJSON(thisURL, params, (function(url, service) {
+			            return function(data) {
+							var layers = data.layers
+							for (var j = layers.length - 1; j >= 0; j--) {
+								var thisLayer = layers[j]
+								var oneLayer = {
+									id: options.label + '-' + service.name + '-' + thisLayer.id,
+									group: service.name,
+									title: thisLayer.name
+								}
+								addLayerToList(oneLayer)
+								oneLayer.meta = thisLayer
+								oneLayer.url = url
+								oneLayer.type = 'esri'
+								allLayers[oneLayer.id] = oneLayer
+							}
+			            };
+					}(thisURL, thisService)))
+				} else if (services[i].type = "FeatureServer") {
+					// We don't support feature service, Hobart... Get some map services sorted!!!
+					// console.log("Not yet implemented featureserver...")
+				}
+			}
+		}
+	});
+}
+
+function addLayerToList(layer) {
+	// layer is an object with unique id, group and title
+	$("#feature-list tbody").append('<tr class="feature-row" id="' + layer.id + '">\
+		<td style="vertical-align: middle;">' + layer.title + '</td>\
+		<td style="vertical-align: middle;"><i class="fa fa-chevron-right pull-right"></i></td></tr>');
+}
+
+var thisLayerInfo = null
+
+function addLayerToMap(layer) {
+	//TODO: Attribution
+	thisLayerInfo = layer
+	if(layer.type === 'esri') {
+	    var createdLayer = L.esri.dynamicMapLayer({
+	    	url: layer.url,
+	        opacity : 1,
+	        layers: [layer.meta.id]
+	    }).addTo(map);
+
+	    overlays[layer.title] = createdLayer
+	} else if (layer.type = 'wms') {
+		var createdLayer = new L.TileLayer.WMS(layer.url + "?SERVICE=WMS&", {
+			layers: layer.meta.name,
+			format: 'image/png',
+			transparent: true,
+			maxZoom: 20
+  		}).addTo(map);
+
+  		overlays[layer.title] = createdLayer
+	}
+
+	map.removeControl(layerControl)
+	layerControl = L.control.layers(baseLayers, overlays, {
+	  collapsed: isCollapsed
+	}).addTo(map);
+}
+
+map.on("click", function(e) {
+	console.log(e.latlng)
+    // dynLayer.identify(e.latlng, {
+    //       tolerance: 3, //default is 3
+    //       layers: 'visible:4',
+    //       sr:4326
+    //     }, function(data) {
+    //   if(data.results.length > 0) {
+    //     result = data.results[0];
+    //     popupText =  "<center><b>Zone: </b>"+result.attributes['Zone']+"</center>";
+    //     if(selection) {map.removeLayer(selection)};
+    //     selection = L.geoJson(jsonconverter.toGeoJson(result.geometry)).addTo(map);
+    //     var popup = L.popup()
+    //         .setLatLng(e.latlng)
+    //         .setContent(popupText)
+    //         .openOn(map);
+    //     selection.bindPopup(popup);
+    //   }
+    // });
+});
 
 /* Highlight search box text on click */
 $("#searchbox").click(function () {
@@ -147,4 +271,20 @@ $("#searchbox").keypress(function (e) {
 
 $("#featureModal").on("hidden.bs.modal", function (e) {
   $(document).on("mouseout", ".feature-row", clearHighlight);
+});
+//Ok, got to get the searching working...
+$(document).ready(function () {
+    (function ($) {
+        $('#layerfilter').keyup(function () {
+            var rex = new RegExp($(this).val(), 'i');
+            $('.searchable tr').hide();
+            $('.searchable tr').filter(function () {
+                return rex.test($(this).text());
+            }).show();
+        })
+    }(jQuery));
+});
+$("#searchclear").click(function(){
+    $("#layerfilter").val('');
+    $('.searchable tr').show();
 });
