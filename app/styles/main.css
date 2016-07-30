@@ -13,14 +13,10 @@ body {
 }
 #searchclear {
     position: absolute;
-    right: 25px;
-    top: 0;
-    bottom: 0;
-    height: 14px;
-    margin: auto;
-    font-size: 14px;
+    left: 260px;
+    top: 10px;
     cursor: pointer;
-    color: #ffffff;
+    color: black;
 }
 .ui-slider-container {
   background-color: #ffffff;
