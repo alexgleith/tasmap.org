@@ -1,6 +1,8 @@
 var map
 var allLayers = {}
 var overlays = {}
+var addedLayers = []
+var selectedFeatures = {}
 
 $(document).on('click', '.feature-row', function (e) {
   // $(document).off("mouseout", ".feature-row", clearHighlight)
@@ -135,8 +137,8 @@ var CityOfLauncestonRest = 'http://mapping.launceston.tas.gov.au/arcgis/rest/ser
 var CityOfHobartRest = 'https://services1.arcgis.com/NHqdsnvwfSTg42I8/arcgis/rest/services/'
 
 getWMS(GlenorchyWMS, {label: 'glenorchy'})
-getArcGISREST(CityOfLauncestonRest, 'Public', {f: 'pjson'}, {label: 'lcc'})
-getArcGISREST(LISTRest, 'Public', {f: 'pjson'}, {label: 'list'})
+//getArcGISREST(CityOfLauncestonRest, 'Public', {f: 'pjson'}, {label: 'lcc'})
+//getArcGISREST(LISTRest, 'Public', {f: 'pjson'}, {label: 'list'})
 // getArcGISREST(CityOfHobartRest, '', {f: 'pjson'}, {label: 'hcc'})
 
 function getWMS (baseURL, options) {
@@ -158,6 +160,8 @@ function getWMS (baseURL, options) {
         oneLayer.meta = {name: name}
         oneLayer.url = baseURL
         oneLayer.type = 'wms'
+        oneLayer.added = false
+        oneLayer.visible = false
         allLayers[oneLayer.id] = oneLayer
       }
     })
@@ -186,6 +190,8 @@ function getArcGISREST (baseURL, startLocation, params, options) {
                 oneLayer.meta = thisLayer
                 oneLayer.url = url
                 oneLayer.type = 'esri'
+                oneLayer.added = false
+                oneLayer.visible = false
                 allLayers[oneLayer.id] = oneLayer
               }
             }
@@ -209,6 +215,10 @@ function addLayerToList (layer) {
 var thisLayerInfo = null
 
 function addLayerToMap (layer) {
+  addedLayers.push(layer.id)
+  layer.added = true
+  layer.visible = true
+
   // TODO: Attribution
   thisLayerInfo = layer
   if (layer.type === 'esri') {
@@ -220,7 +230,7 @@ function addLayerToMap (layer) {
 
     overlays[layer.title] = createdLayer
   } else if (layer.type = 'wms') {
-    var createdLayer = new L.TileLayer.WMS(layer.url + '?SERVICE=WMS&', {
+    var createdLayer = new L.TileLayer.WMS(layer.url, {
       layers: layer.meta.name,
       format: 'image/png',
       transparent: true,
@@ -237,7 +247,36 @@ function addLayerToMap (layer) {
 }
 
 map.on('click', function (e) {
-  console.log(e.latlng)
+  $("#data-detail").show()
+  $("#data-container").empty()
+  var dataTabContents = $("#data-tab-contents");
+  var currentChildren = dataTabContents.children();
+  for (var i = currentChildren.length - 1; i >= 0; i--) {
+    currentChildren[i].remove()
+  }
+
+  for (var i = addedLayers.length - 1; i >= 0; i--) {
+    var thisLayer = allLayers[addedLayers[i]]
+    if (thisLayer.type === 'wms') {
+      getFeatureWMS(thisLayer, e.latlng)
+    } else if (thisLayer.type === 'esri') {
+      console.log('TODO: implement ESRI get')
+    } else {
+      console.log("Failed to handle this layer...")
+      console.log(thisLayer)
+    }
+  }
+
+  // Clear the interface
+
+  // Clear the map
+
+  // Identify the services
+
+  // Get the WMS
+
+  // Get the REST
+
 // dynLayer.identify(e.latlng, {
 //       tolerance: 3, //default is 3
 //       layers: 'visible:4',
@@ -257,8 +296,138 @@ map.on('click', function (e) {
 // })
 })
 
+function getFeatureWMS(layer, clickCoords) {
+  var url = layer.url
+  var bbox = (clickCoords.lng - 0.0001) + 
+      "," + (clickCoords.lat - 0.0001) + 
+      "," + (clickCoords.lng + 0.0001) + 
+      "," + (clickCoords.lat + 0.0001) + ',EPSG:4326'
+
+  var parameters = {
+      service : 'WFS',
+      version : '1.1.1',
+      request : 'GetFeature',
+      typeName : layer.meta.name,
+      maxFeatures : 100,
+      outputFormat : 'text/javascript',
+      format_options : 'callback:getJson',
+      SrsName : 'EPSG:4326',
+      bbox : bbox
+  };
+  //console.log(url);
+  $.ajax({
+      url : url + L.Util.getParamString(parameters),
+      dataType : 'jsonp',
+      jsonpCallback : 'getJson',
+      success : handleWMSJsonP(layer)
+  });
+}
+
+function handleWMSJsonP(layer) {
+  return function(data) {
+    console.log(data)
+    console.log(layer)
+    if (data.features.length > 0) {
+      addDataToTable(layer.title, layer.id, data.features)
+      addDataToMap(data)
+    }
+  };
+}
+
+function addDataToTable(title, id, data) {
+  console.log(data)
+
+  for (var name in data[0].properties) {
+    console.log("<b>" + name + ":</b> " + data[0].properties[name] + "<br>")
+  };
+          
+}
+
+function addDataToMap(data) {
+  var selectedFeature = L.geoJson(data, {
+    style: function (feature) {
+        return {color: 'yellow'};
+    },
+    onEachFeature: function (feature, layer) {
+        layer.on({
+            mouseover: highlightFeature,
+            mouseout: resetHighlight
+        });
+    },                
+    pointToLayer: function (feature, latlng) {
+        return L.circleMarker(latlng, {
+            radius: 5,
+            fillColor: "yellow",
+            color: "#000",
+            weight: 5,
+            opacity: 0.6,
+            fillOpacity: 0.2
+        });
+    }
+  });
+  selectedFeature.addTo(map);
+}
+
+function highlightFeature(e) {
+  var layer = e.target;
+  layer.setStyle({
+      fillColor: "yellow",
+      color: "yellow",
+      weight: 5,
+      opacity: 1
+  });
+  if (!L.Browser.ie && !L.Browser.opera) {
+      layer.bringToFront();
+  }
+}
+
+function resetHighlight(e) {
+    var layer = e.target;
+    layer.setStyle({
+        radius: 5,
+        fillColor: "yellow",
+        color: "yellow",
+        weight: 5,
+        opacity: 0.6,
+        fillOpacity: 0.2
+    });
+}
+
+//Google Places Autocomplete
+var input = (
+document.getElementById('searchbox'));
+var autocomplete = new google.maps.places.Autocomplete(input);
+autocomplete.addListener('place_changed', function() {
+    var place = autocomplete.getPlace();
+
+    // If the place has a geometry, then present it on a map.
+    if (place.geometry.viewport) {
+        var b = place.geometry.viewport.toJSON();
+        var southWest = L.latLng(b.south, b.west),
+            northEast = L.latLng(b.north, b.east),
+            bounds = L.latLngBounds(southWest, northEast);
+        map.fitBounds(bounds);
+    } else {
+        //it's just a point, guess the zoom level.
+        var lng = place.geometry.location.lng(),
+            lat = place.geometry.location.lat();
+        map.setView([lat, lng], 12);
+    }
+});
+
+// highlight table (and feature?) on hover
+$('.moreBtn').mouseover(function(){
+    $(this).css({
+        'color' :'red',
+        //other styles
+    })
+});
+
 /* Highlight search box text on click */
 $('#searchbox').click(function () {
+  $(this).select()
+})
+$('#filter').click(function () {
   $(this).select()
 })
 

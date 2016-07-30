@@ -85,15 +85,65 @@
         </div>
       </div>
       <div id="map"></div>
-    </div>
-    <div id="loading">
-      <div class="loading-indicator">
-        <div class="progress progress-striped active">
-          <div class="progress-bar progress-bar-info progress-bar-full"></div>
+      <footer class="navbar-default navbar-fixed-bottom collapse" id="data-detail">
+        <div class="container-fluid" id="data-container">
+          <ul class="nav nav-tabs" id="data-tabs">
+            <li class="active"><a data-toggle="tab" href="#home">Home</a></li>
+            <li><a data-toggle="tab" href="#menu1">Menu 1</a></li>
+            <li><a data-toggle="tab" href="#menu2">Menu 2</a></li>
+          </ul>
         </div>
-      </div>
-    </div>
+        <div class="tab-content" id=data-tab-contents>
+          <div id="home" class="tab-pane active">
+            <div class="panel panel-default">
+              <div class="table">
+                <table class="table table-condensed table-striped table-hover">
+                  <thead>
+                    <th>Example</th>
+                    <th>Example 2</th>
+                  </thead>
+                  <tbody>
+                    <tr class="data-row">
+                      <td>one</td>
+                      <td>two</td>
+                    </tr>
+                    <tr class="data-row">
+                      <td>one</td>
+                      <td>two</td>
+                    </tr>
+                    <tr class="data-row">
+                      <td>one</td>
+                      <td>two</td>
+                    </tr>
+                    <tr class="data-row">
+                      <td>one</td>
+                      <td>two</td>
+                    </tr>
+                    <tr class="data-row">
+                      <td>one</td>
+                      <td>two</td>
+                    </tr>
+                    <tr class="data-row">
+                      <td>one</td>
+                      <td>two</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div id="menu1" class="tab-pane fade">
+            <h3>Menu 1</h3>
+            <p>Some content in menu 1.</p>
+          </div>
+          <div id="menu2" class="tab-pane fade">
+            <h3>Menu 2</h3>
+            <p>Some content in menu 2.</p>
+          </div>
+        </div>
+      </footer>
 
+    </div>
     <div class="modal fade" id="aboutModal" tabindex="-1" role="dialog">
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -189,6 +239,9 @@
       r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));
       ga('create','UA-XXXXX-X');ga('send','pageview');
     </script>
+
+    <!-- Google places API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDk66629MXhg6QKVEeKpaweURt7-sl9U-4&libraries=places"></script>
 
     <!-- build:js scripts/vendor.js -->
     <!-- bower:js -->
