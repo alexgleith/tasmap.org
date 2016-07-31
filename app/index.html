@@ -129,64 +129,30 @@
         <div class="modal-content">
           <div class="modal-header">
             <button class="close" type="button" data-dismiss="modal" aria-hidden="true">&times;</button>
-            <h4 class="modal-title">Welcome to the BootLeaf template!</h4>
+            <h4 class="modal-title">Welcome to the TasMap.org</h4>
           </div>
           <div class="modal-body">
-            <ul class="nav nav-tabs nav-justified" id="aboutTabs">
-              <li class="active"><a href="#about" data-toggle="tab"><i class="fa fa-question-circle"></i>&nbsp;About the project</a></li>
-              <li><a href="#contact" data-toggle="tab"><i class="fa fa-envelope"></i>&nbsp;Contact us</a></li>
-              <li><a href="#disclaimer" data-toggle="tab"><i class="fa fa-exclamation-circle"></i>&nbsp;Disclaimer</a></li>
-            </ul>
-            <div class="tab-content" id="aboutTabsContent">
-              <div class="tab-pane fade active in" id="about">
-                <p>A simple, responsive template for building web mapping applications with <a href="http://getbootstrap.com/">Bootstrap 3</a>, <a href="http://leafletjs.com/" target="_blank">Leaflet</a>, and <a href="http://twitter.github.io/typeahead.js/" target="_blank">typeahead.js</a>. Open source, MIT licensed, and available on <a href="https://github.com/bmcbride/bootleaf" target="_blank">GitHub</a>.</p>
-                <div class="panel panel-primary">
-                  <div class="panel-heading">Features</div>
-                  <ul class="list-group">
-                    <li class="list-group-item">Fullscreen mobile-friendly map template with responsive navbar and modal placeholders</li>
-                    <li class="list-group-item">jQuery loading of external GeoJSON files</li>
-                    <li class="list-group-item">Logical multiple layer marker clustering via the <a href="https://github.com/Leaflet/Leaflet.markercluster" target="_blank">leaflet marker cluster plugin</a></li>
-                    <li class="list-group-item">Elegant client-side multi-layer feature search with autocomplete using <a href="http://twitter.github.io/typeahead.js/" target="_blank">typeahead.js</a></li>
-                    <li class="list-group-item">Responsive sidebar feature list synced with map bounds, which includes sorting and filtering via <a href="http://listjs.com/" target="_blank">list.js</a></li>
-                    <li class="list-group-item">Marker icons included in grouped layer control via the <a href="https://github.com/ismyrnow/Leaflet.groupedlayercontrol" target="_blank">grouped layer control plugin</a></li>
-                  </ul>
-                </div>
-              </div>
-              <div id="disclaimer" class="tab-pane fade text-danger">
-                <p>The data provided on this site is for informational and planning purposes only.</p>
-                <p>Absolutely no accuracy or completeness guarantee is implied or intended. All information on this map is subject to such variations and corrections as might result from a complete title search and/or accurate field survey.</p>
-              </div>
-              <div class="tab-pane fade" id="contact">
-                <form id="contact-form">
-                  <div class="well well-sm">
-                    <div class="row">
-                      <div class="col-md-4">
-                        <div class="form-group">
-                          <label for="first-name">First Name:</label>
-                          <input type="text" class="form-control" id="first-name">
-                        </div>
-                        <div class="form-group">
-                          <label for="last-name">Last Name:</label>
-                          <input type="text" class="form-control" id="last-email">
-                        </div>
-                        <div class="form-group">
-                          <label for="email">Email:</label>
-                          <input type="text" class="form-control" id="email">
-                        </div>
-                      </div>
-                      <div class="col-md-8">
-                        <label for="message">Message:</label>
-                        <textarea class="form-control" rows="8" id="message"></textarea>
-                      </div>
-                      <div class="col-md-12">
-                        <p>
-                          <button type="submit" class="btn btn-primary pull-right" data-dismiss="modal">Submit</button>
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </form>
-              </div>
+            <h2>What have we here?</h2>
+            <p>
+              This is a simple, fast, lightweight mapping system. It harvests available datasets from Tasmanian State and Local Government authorities and provides basic viewing and information retrieval.
+            </p>
+            <h2>Whose data?</h2>
+            <p>
+              The map supports GeoServer WMS/WFS and ESRI REST services. If you have one and want to get it in here, get in touch. Currently the map supports data from the following sources:
+              <ul>
+                <li><a href="http://www.thelist.tas.gov.au">The LIST</a></li>
+                <li><a href="https://maps.gcc.tas.gov.au">Glenorchy City Council</a></li>
+                <li><a href="http://www.launceston.tas.gov.au/lcc/">City of Launceston.</a></li>
+              </ul>
+            </p>
+            <h2>Who did this?!</h2>
+            <p>
+              This mapping system was put together by Alex Leith for GovHack 2016. You can contact him at <a href="mailto://alexgleith@gmail.com">alexgleith (at) gmail.com</a>
+            </p>
+            <h2>Why doesn't it do X?</h2>
+            <p>
+              Because I built it in a weekend! If you think it should do more, come and chat about it at <a href="https://github.com/alexgleith/tasmap.org">GitHub</a>. You can either submit a pull request or create an issue.
+            </p>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
