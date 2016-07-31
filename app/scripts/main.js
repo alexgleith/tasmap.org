@@ -1,3 +1,7 @@
+
+//Leaflet images config:
+L.Icon.Default.imagePath = './scripts/images';
+
 var map
 var allLayers = {}
 var overlays = {}
@@ -5,7 +9,7 @@ var addedLayers = []
 var selectedFeatures = []
 var allSingleLayers = {}
 
-var debug = true
+var debug = false
 var debugLevel = 4
 
 var initialLayers = getParameterByName('layers')
@@ -17,6 +21,9 @@ $(document).on('click', '.feature-row', function (e) {
   // $(document).off("mouseout", ".feature-row", clearHighlight)
   var thisLayer = allLayers[$(this).attr('id')]
   addLayerToMap(thisLayer)
+  if(screen.width < 767) {
+    animateSidebar()
+  }
 })
 
 // data table actions
@@ -122,16 +129,16 @@ var LISTAerial = new L.tileLayer('https://services.thelist.tas.gov.au/arcgis/res
 })
 
 map = L.map('map', {
-  zoom: 17,
-  center: [-42.8819154, 147.330754],
+  zoom: 8,
+  center: [-42.070,146.780],
   layers: [LISTTopographic],
-  zoomControl: false,
+  zoomControl: true,
   attributionControl: false
 })
 
 /* GPS enabled geolocation control set to follow the user's location */
 var locateControl = L.control.locate({
-  position: 'bottomright',
+  position: 'topleft',
   drawCircle: true,
   follow: true,
   setView: true,
@@ -373,7 +380,7 @@ function getFeatureREST(layer, clickCoords) {
 
 function getFeatureWMS(layer, clickCoords) {
   log("Getting info for layer: " + layer.title, 2)
-  var url = layer.url
+  var wms_gf_url = layer.url
   var bbox = (clickCoords.lng - 0.0001) + 
       "," + (clickCoords.lat - 0.0001) + 
       "," + (clickCoords.lng + 0.0001) + 
@@ -390,7 +397,7 @@ function getFeatureWMS(layer, clickCoords) {
       bbox : bbox
   };
   $.ajax({
-      url : url + L.Util.getParamString(parameters),
+      url : wms_gf_url + L.Util.getParamString(parameters),
       dataType : 'json',
       success : handleWMSJSON(layer)
   });

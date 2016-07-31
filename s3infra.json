@@ -1,0 +1,44 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+  "Description": "Buckets used for the website and associated core systems.",
+  "Parameters" : {
+    "DomainName": {
+      "Type": "String"
+    }
+  },
+  "Resources" : {
+	"Bucket" : {
+	  "Type" : "AWS::S3::Bucket",
+	  "Properties" : {
+	    "BucketName" :  {"Ref": "DomainName"},
+	    "AccessControl" : "PublicRead",
+	    "WebsiteConfiguration" : {
+	      "IndexDocument" : "index.html",
+	      "ErrorDocument" : "error.html"
+	    },
+	    "CorsConfiguration": {
+	      "CorsRules" : [{
+	        "AllowedHeaders" : [ "Authorization" ],
+	        "AllowedMethods" : [ "GET" ],
+	        "AllowedOrigins" : [ "*" ],
+	        "MaxAge" : 3000
+	      }]
+	    }
+	  }
+	},
+	"WWWRedirectBucket": {
+	    "Type": "AWS::S3::Bucket",
+	    "Properties": {
+	        "BucketName": {
+	            "Fn::Join": [".", ["www", {"Ref":"DomainName"}]]
+	        },
+	        "AccessControl": "BucketOwnerFullControl",
+	        "WebsiteConfiguration": {
+	            "RedirectAllRequestsTo": {
+	                "HostName": {"Ref": "DomainName"}
+	            }
+	        }
+	    }
+	}
+	}
+}

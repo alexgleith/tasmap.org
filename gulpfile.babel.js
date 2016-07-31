@@ -66,6 +66,14 @@ gulp.task('images', () => {
     .pipe(gulp.dest('dist/images'));
 });
 
+
+gulp.task('leaflet-images', function() {
+   gulp.src(['./bower_components/leaflet/dist/images/*.png'])
+   .pipe(gulp.dest('dist/styles/images'))
+   .pipe(gulp.dest('.tmp/styles/images'));
+});
+
+
 gulp.task('fonts', () => {
   return gulp.src(require('main-bower-files')('**/*.{eot,svg,ttf,woff,woff2}', function (err) {})
     .concat('app/fonts/**/*'))
@@ -84,7 +92,7 @@ gulp.task('extras', () => {
 
 gulp.task('clean', del.bind(null, ['.tmp', 'dist']));
 
-gulp.task('serve', ['styles', 'scripts', 'fonts'], () => {
+gulp.task('serve', ['styles', 'scripts', 'fonts', 'leaflet-images'], () => {
   browserSync({
     notify: false,
     port: 9000,
@@ -146,10 +154,32 @@ gulp.task('wiredep', () => {
     .pipe(gulp.dest('app'));
 });
 
-gulp.task('build', ['lint', 'html', 'images', 'fonts', 'extras'], () => {
+gulp.task('build', ['html', 'images', 'fonts', 'extras', 'leaflet-images'], () => {
   return gulp.src('dist/**/*').pipe($.size({title: 'build', gzip: true}));
 });
 
 gulp.task('default', ['clean'], () => {
   gulp.start('build');
+});
+
+
+gulp.task('deploy', ['build'], () => {
+  // create a new publisher
+  const publisher = $.awspublish.create({
+    region: 'ap-southeast-2',
+    params: {
+      Bucket: 'tidemaps.tidetech.org'
+    }
+  });
+
+  // define custom headers
+  const headers = {
+    'Cache-Control': 'max-age=315360000, no-transform, public'
+  };
+
+  return gulp.src('dist/**/*.*')
+    .pipe(publisher.publish(headers))
+    .pipe(publisher.sync())
+    .pipe(publisher.cache())
+    .pipe($.awspublish.reporter());
 });
