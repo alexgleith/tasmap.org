@@ -2,7 +2,16 @@ var map
 var allLayers = {}
 var overlays = {}
 var addedLayers = []
-var selectedFeatures = {}
+var selectedFeatures = []
+var allSingleLayers = {}
+
+var debug = true
+var debugLevel = 4
+
+var initialLayers = getParameterByName('layers')
+if(initialLayers != null) {
+  initialLayers = initialLayers.split(';')
+}
 
 $(document).on('click', '.feature-row', function (e) {
   // $(document).off("mouseout", ".feature-row", clearHighlight)
@@ -10,9 +19,46 @@ $(document).on('click', '.feature-row', function (e) {
   addLayerToMap(thisLayer)
 })
 
+// data table actions
+$(document).on("mouseenter", ".data-table tr", function(e) {
+  var id = $(this)[0].id
+  var layer = allSingleLayers[id]
+  if(layer != null) {
+    highlightLayer(layer)
+  }
+});
+$(document).on("mouseleave", ".data-table tr", function(e) {
+  var id = $(this)[0].id
+  var layer = allSingleLayers[id]
+  if(layer != null) {
+    resetLayer(layer)
+  }
+});
+$(document).on("click", ".data-table tr", function(e) {
+  var id = $(this)[0].id
+  var layer = allSingleLayers[id]
+  if(layer != null) {
+    try {
+      map.fitBounds(layer.getBounds());
+    } catch (TypeError) {
+      console.log(layer)
+      map.panTo(layer._latlng)
+    }
+  }
+});
+
 $('#about-btn').click(function () {
   $('#aboutModal').modal('show')
   $('.navbar-collapse.in').collapse('hide')
+  return false
+})
+
+$('#data-detail-close-btn').click(function () {
+  $('#data-detail').hide()
+  return false
+})
+$('#data-detail-clear-btn').click(function () {
+  clearSelectedFeatures()
   return false
 })
 
@@ -76,7 +122,7 @@ var LISTAerial = new L.tileLayer('https://services.thelist.tas.gov.au/arcgis/res
 })
 
 map = L.map('map', {
-  zoom: 10,
+  zoom: 17,
   center: [-42.8819154, 147.330754],
   layers: [LISTTopographic],
   zoomControl: false,
@@ -137,8 +183,8 @@ var CityOfLauncestonRest = 'http://mapping.launceston.tas.gov.au/arcgis/rest/ser
 var CityOfHobartRest = 'https://services1.arcgis.com/NHqdsnvwfSTg42I8/arcgis/rest/services/'
 
 getWMS(GlenorchyWMS, {label: 'glenorchy'})
-//getArcGISREST(CityOfLauncestonRest, 'Public', {f: 'pjson'}, {label: 'lcc'})
-//getArcGISREST(LISTRest, 'Public', {f: 'pjson'}, {label: 'list'})
+getArcGISREST(CityOfLauncestonRest, 'Public', {f: 'pjson'}, {label: 'lcc'})
+getArcGISREST(LISTRest, 'Public', {f: 'pjson'}, {label: 'list'})
 // getArcGISREST(CityOfHobartRest, '', {f: 'pjson'}, {label: 'hcc'})
 
 function getWMS (baseURL, options) {
@@ -163,12 +209,18 @@ function getWMS (baseURL, options) {
         oneLayer.added = false
         oneLayer.visible = false
         allLayers[oneLayer.id] = oneLayer
+
+        // If the layer is in the initial list, load it
+        if($.inArray(oneLayer.id, initialLayers) !== -1) {
+          addLayerToMap(oneLayer)
+        }
       }
     })
   })
 }
 
 function getArcGISREST (baseURL, startLocation, params, options) {
+  log("Getting REST info for: " + options.label, 3)
   $.getJSON(baseURL + startLocation, params, function (data) {
     var services = data.services
     if (services != null) {
@@ -193,12 +245,17 @@ function getArcGISREST (baseURL, startLocation, params, options) {
                 oneLayer.added = false
                 oneLayer.visible = false
                 allLayers[oneLayer.id] = oneLayer
+
+                // If the layer is in the initial list, load it
+                if($.inArray(oneLayer.id, initialLayers) !== -1) {
+                  addLayerToMap(oneLayer)
+                }
               }
             }
           }(thisURL, thisService)))
         } else if (services[i].type = 'FeatureServer') {
           // We don't support feature service, Hobart... Get some map services sorted!!!
-          // console.log("Not yet implemented featureserver...")
+          log("Not yet implemented featureserver...", 1)
         }
       }
     }
@@ -212,20 +269,22 @@ function addLayerToList (layer) {
 		<td style="vertical-align: middle;"><i class="fa fa-chevron-right pull-right"></i></td></tr>')
 }
 
-var thisLayerInfo = null
-
 function addLayerToMap (layer) {
+  if($.inArray(layer.id, addedLayers) !== -1) {
+    return;
+  }
   addedLayers.push(layer.id)
+  updateLayersParameter()
   layer.added = true
   layer.visible = true
 
   // TODO: Attribution
-  thisLayerInfo = layer
   if (layer.type === 'esri') {
     var createdLayer = L.esri.dynamicMapLayer({
       url: layer.url,
       opacity: 1,
-      layers: [layer.meta.id]
+      layers: [layer.meta.id],
+      id: layer.id
     }).addTo(map)
 
     overlays[layer.title] = createdLayer
@@ -234,7 +293,8 @@ function addLayerToMap (layer) {
       layers: layer.meta.name,
       format: 'image/png',
       transparent: true,
-      maxZoom: 20
+      maxZoom: 20,
+      id: layer.id
     }).addTo(map)
 
     overlays[layer.title] = createdLayer
@@ -247,56 +307,72 @@ function addLayerToMap (layer) {
 }
 
 map.on('click', function (e) {
-  $("#data-detail").show()
-  $("#data-container").empty()
+  // Hide the table
+  $("#data-detail").hide()
+
+  // Clear the interface
+  $('#data-tabs').empty()
   var dataTabContents = $("#data-tab-contents");
   var currentChildren = dataTabContents.children();
   for (var i = currentChildren.length - 1; i >= 0; i--) {
     currentChildren[i].remove()
   }
 
+  // Clear the map
+  clearSelectedFeatures()
+
+  // Get the WMS and REST vector info
   for (var i = addedLayers.length - 1; i >= 0; i--) {
     var thisLayer = allLayers[addedLayers[i]]
+    if(!thisLayer.visible) {
+      continue;
+    }
     if (thisLayer.type === 'wms') {
       getFeatureWMS(thisLayer, e.latlng)
     } else if (thisLayer.type === 'esri') {
-      console.log('TODO: implement ESRI get')
+      getFeatureREST(thisLayer, e.latlng)
     } else {
-      console.log("Failed to handle this layer...")
-      console.log(thisLayer)
+      log("Failed to handle layer: " + layer.name, 1)
     }
   }
-
-  // Clear the interface
-
-  // Clear the map
-
-  // Identify the services
-
-  // Get the WMS
-
-  // Get the REST
-
-// dynLayer.identify(e.latlng, {
-//       tolerance: 3, //default is 3
-//       layers: 'visible:4',
-//       sr:4326
-//     }, function(data) {
-//   if(data.results.length > 0) {
-//     result = data.results[0]
-//     popupText =  "<center><b>Zone: </b>"+result.attributes['Zone']+"</center>"
-//     if(selection) {map.removeLayer(selection)}
-//     selection = L.geoJson(jsonconverter.toGeoJson(result.geometry)).addTo(map)
-//     var popup = L.popup()
-//         .setLatLng(e.latlng)
-//         .setContent(popupText)
-//         .openOn(map)
-//     selection.bindPopup(popup)
-//   }
-// })
 })
 
+function clearSelectedFeatures() {
+  for (var i = selectedFeatures.length - 1; i >= 0; i--) {
+    selectedFeatures[i].removeFrom(map)
+  }
+  selectedFeatures = []
+  allSingleLayers = {}
+}
+
+function handleData(layer, data) {
+  if(data.features.length === 0) {
+    return
+  }
+  for (var i = data.features.length - 1; i >= 0; i--) {
+    data.features[i].uuid = guid()
+
+  }
+  addDataToTable(layer.title, layer.id, data.features)
+  addDataToMap(data)
+  $("#data-detail").show()
+}
+
+function getFeatureREST(layer, clickCoords) {
+  log("Getting REST info for: " + layer.title, 3)
+  L.esri.identifyFeatures({
+    url: layer.url
+  })
+  .on(map)
+  .at([clickCoords.lat, clickCoords.lng])
+  .layers('layers=visible:' + layer.meta.id)
+  .run(function(error, data, response){
+      handleData(layer, data)
+  });
+}
+
 function getFeatureWMS(layer, clickCoords) {
+  log("Getting info for layer: " + layer.title, 2)
   var url = layer.url
   var bbox = (clickCoords.lng - 0.0001) + 
       "," + (clickCoords.lat - 0.0001) + 
@@ -309,38 +385,61 @@ function getFeatureWMS(layer, clickCoords) {
       request : 'GetFeature',
       typeName : layer.meta.name,
       maxFeatures : 100,
-      outputFormat : 'text/javascript',
-      format_options : 'callback:getJson',
+      outputFormat : 'application/json',
       SrsName : 'EPSG:4326',
       bbox : bbox
   };
-  //console.log(url);
   $.ajax({
       url : url + L.Util.getParamString(parameters),
-      dataType : 'jsonp',
-      jsonpCallback : 'getJson',
-      success : handleWMSJsonP(layer)
+      dataType : 'json',
+      success : handleWMSJSON(layer)
   });
 }
 
-function handleWMSJsonP(layer) {
+// This is a weird closure function...
+function handleWMSJSON(layer) {
+  log("Handling JSON for layer: " + layer.title, 2)
   return function(data) {
-    console.log(data)
-    console.log(layer)
     if (data.features.length > 0) {
-      addDataToTable(layer.title, layer.id, data.features)
-      addDataToMap(data)
+      handleData(layer, data)
     }
   };
 }
 
 function addDataToTable(title, id, data) {
-  console.log(data)
+  if (data.length === 0) {
+    return
+  }
+  // Remove the bbox, nobody got time for dat
+  for (var i = data.length - 1; i >= 0; i--) {
+    delete data[i].properties["bbox"]
+    delete data[i].properties["SHAPE.LEN"]
+    delete data[i].properties["SHAPE"]
+    delete data[i].properties["SHAPE.AREA"]
+    delete data[i].properties["LIST_GUID"]
+  }
 
+  var tableContent = '<div class="table"><table class="table table-condensed table-striped table-hover table-nonfluid data-table">'
+  tableContent += '<thead>'
+  tableContent += '<th style="display:none">uuid</th>'
   for (var name in data[0].properties) {
-    console.log("<b>" + name + ":</b> " + data[0].properties[name] + "<br>")
+    tableContent += '<th>' + name + '</th>'
   };
-          
+  tableContent += '</thead>'
+                  
+  for (var i = data.length - 1; i >= 0; i--) {
+    var oneRow = data[i]
+    tableContent += '<tr id=' + data[i].uuid + '>'
+    tableContent += '<td style="display:none">' + data[i].uuid + '</td>'
+    for (var name in oneRow.properties) {
+      tableContent += '<td>' + oneRow.properties[name] + '</td>'
+    };
+    tableContent += '</tr>'
+  }
+  var thisId = id.replace('-','').replace('/', '').replace('\\','')
+  $('#data-tabs').append('<li><a data-toggle="tab" href="#'+thisId+'">'+title+'</a></li>');
+  $("#data-tab-contents").append('<div class="tab-pane fade in" id="'+thisId+'">'+tableContent+'</div>');
+  $('#data-tabs a[href="#'+thisId+'"]').trigger('click');
 }
 
 function addDataToMap(data) {
@@ -351,11 +450,13 @@ function addDataToMap(data) {
     onEachFeature: function (feature, layer) {
         layer.on({
             mouseover: highlightFeature,
-            mouseout: resetHighlight
+            mouseout: resetHighlight,
+            click: openTable()
         });
+        allSingleLayers[feature.uuid] = layer
     },                
     pointToLayer: function (feature, latlng) {
-        return L.circleMarker(latlng, {
+        var oneFeature =  L.circleMarker(latlng, {
             radius: 5,
             fillColor: "yellow",
             color: "#000",
@@ -363,35 +464,113 @@ function addDataToMap(data) {
             opacity: 0.6,
             fillOpacity: 0.2
         });
+        return oneFeature
     }
   });
   selectedFeature.addTo(map);
+  selectedFeatures.push(selectedFeature)
 }
 
-function highlightFeature(e) {
-  var layer = e.target;
+function openTable() {
+  $('#data-detail').show()
+}
+
+function highlightLayer(layer) {
   layer.setStyle({
       fillColor: "yellow",
       color: "yellow",
       weight: 5,
       opacity: 1
   });
+}
+function resetLayer(layer) {
+  layer.setStyle({
+      radius: 5,
+      fillColor: "yellow",
+      color: "yellow",
+      weight: 5,
+      opacity: 0.6,
+      fillOpacity: 0.2
+  });
+}
+
+function highlightFeature(e) {
+  var layer = e.target;
+  highlightLayer(layer)
+  $("#" + layer.feature.uuid).addClass('info')
   if (!L.Browser.ie && !L.Browser.opera) {
       layer.bringToFront();
   }
 }
 
 function resetHighlight(e) {
-    var layer = e.target;
-    layer.setStyle({
-        radius: 5,
-        fillColor: "yellow",
-        color: "yellow",
-        weight: 5,
-        opacity: 0.6,
-        fillOpacity: 0.2
-    });
+  var layer = e.target;
+  resetLayer(layer)
+  $("#" + layer.feature.uuid).removeClass('info')
 }
+
+function log(message, level) {
+  if (debug && level < debugLevel) {
+    console.log(message)
+  }
+}
+function guid() {
+  function s4() {
+    return Math.floor((1 + Math.random()) * 0x10000)
+      .toString(16)
+      .substring(1);
+  }
+  return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+    s4() + '-' + s4() + s4() + s4();
+}
+
+function updateLayersParameter() {
+  var layersString = ""
+  for (var i = addedLayers.length - 1; i >= 0; i--) {
+    var thisLayer = allLayers[addedLayers[i]]
+    if(thisLayer != null) {
+      layersString += thisLayer.id + ';'
+    }
+  }
+  layersString = layersString.substring(0, layersString.length - 1);
+  setParameter('layers', layersString)
+}
+
+//URL Parameter functions
+function getParameterByName(name, url) {
+    if (!url) url = window.location.href;
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
+}
+
+function setParameter(paramName, paramValue) {
+    var url = window.location.href;
+    var hash = location.hash;
+    url = url.replace(hash, '');
+    if (url.indexOf(paramName + "=") >= 0)
+    {
+        var prefix = url.substring(0, url.indexOf(paramName));
+        var suffix = url.substring(url.indexOf(paramName));
+        suffix = suffix.substring(suffix.indexOf("=") + 1);
+        suffix = (suffix.indexOf("&") >= 0) ? suffix.substring(suffix.indexOf("&")) : "";
+        url = prefix + paramName + "=" + paramValue + suffix;
+    }
+    else
+    {
+    if (url.indexOf("?") < 0)
+        url += "?" + paramName + "=" + paramValue;
+    else
+        url += "&" + paramName + "=" + paramValue;
+    }
+    window.history.replaceState({},"", url + hash);
+}
+
+// Hash the location
+var hash = new L.Hash(map);
 
 //Google Places Autocomplete
 var input = (
@@ -415,12 +594,12 @@ autocomplete.addListener('place_changed', function() {
     }
 });
 
-// highlight table (and feature?) on hover
-$('.moreBtn').mouseover(function(){
-    $(this).css({
-        'color' :'red',
-        //other styles
-    })
+map.on('overlayadd', function(e) {
+    allLayers[e.layer.options.id].visible = true
+});
+
+map.on('overlayremove', function(e) {
+    allLayers[e.layer.options.id].visible = false
 });
 
 /* Highlight search box text on click */

@@ -85,8 +85,14 @@
         </div>
       </div>
       <div id="map"></div>
-      <footer class="navbar-default navbar-fixed-bottom collapse" id="data-detail">
+      <footer class="navbar-default navbar-fixed-bottom collapse" style="display:none" id="data-detail">
         <div class="container-fluid" id="data-container">
+          <div class='btn-toolbar pull-right'>
+            <div class='btn-group'>
+              <button type='button' class='btn btn-default' id='data-detail-clear-btn'>Clear</button>
+              <button type='button' class='btn btn-default' id='data-detail-close-btn'>Close</button>
+            </div>
+          </div>
           <ul class="nav nav-tabs" id="data-tabs">
             <li class="active"><a data-toggle="tab" href="#home">Home</a></li>
             <li><a data-toggle="tab" href="#menu1">Menu 1</a></li>
@@ -103,30 +109,6 @@
                     <th>Example 2</th>
                   </thead>
                   <tbody>
-                    <tr class="data-row">
-                      <td>one</td>
-                      <td>two</td>
-                    </tr>
-                    <tr class="data-row">
-                      <td>one</td>
-                      <td>two</td>
-                    </tr>
-                    <tr class="data-row">
-                      <td>one</td>
-                      <td>two</td>
-                    </tr>
-                    <tr class="data-row">
-                      <td>one</td>
-                      <td>two</td>
-                    </tr>
-                    <tr class="data-row">
-                      <td>one</td>
-                      <td>two</td>
-                    </tr>
-                    <tr class="data-row">
-                      <td>one</td>
-                      <td>two</td>
-                    </tr>
                   </tbody>
                 </table>
               </div>
@@ -134,11 +116,9 @@
           </div>
           <div id="menu1" class="tab-pane fade">
             <h3>Menu 1</h3>
-            <p>Some content in menu 1.</p>
           </div>
           <div id="menu2" class="tab-pane fade">
             <h3>Menu 2</h3>
-            <p>Some content in menu 2.</p>
           </div>
         </div>
       </footer>
@@ -249,6 +229,7 @@
     <script src="/bower_components/leaflet/dist/leaflet.js"></script>
     <script src="/bower_components/leaflet.locatecontrol/src/L.Control.Locate.js"></script>
     <script src="/bower_components/esri-leaflet/dist/esri-leaflet.js"></script>
+    <script src="scripts/leaflet.hash.js"></script>
     <!-- endbower -->
     <!-- endbuild -->
     
