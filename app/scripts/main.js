@@ -124,13 +124,13 @@ function animateSidebar () {
 
 /* Basemap Layers */
 var LISTTopographic = new L.tileLayer('https://services.thelist.tas.gov.au/arcgis/rest/services/Basemaps/Topographic/ImageServer/tile/{z}/{y}/{x}', {
-  attribution: 'Topographic Basemap from <a href=http://www.thelist.tas.gov.au>the LIST</a> &copy State of Tasmania',
+  attribution: 'Topographic Basemap from <a href=https://www.thelist.tas.gov.au>the LIST</a> &copy State of Tasmania',
   maxZoom: 20,
   maxNativeZoom: 18
 })
 
 var LISTAerial = new L.tileLayer('https://services.thelist.tas.gov.au/arcgis/rest/services/Basemaps/Orthophoto/ImageServer/tile/{z}/{y}/{x}', {
-  attribution: 'Base Imagery from <a href=http://www.thelist.tas.gov.au>the LIST</a> &copy State of Tasmania',
+  attribution: 'Base Imagery from <a href=https://www.thelist.tas.gov.au>the LIST</a> &copy State of Tasmania',
   maxZoom: 20,
   maxNativeZoom: 19
 })
@@ -181,9 +181,9 @@ var layerControl = L.control.layers(baseLayers, overlays, {
   collapsed: isCollapsed
 }).addTo(map)
 
-var LISTRest = 'http://services.thelist.tas.gov.au/arcgis/rest/services/'
+var LISTRest = 'https://services.thelist.tas.gov.au/arcgis/rest/services/'
 var GlenorchyWMS = 'https://maps.gcc.tas.gov.au/geoserver/GCC_cc/ows'
-var CityOfLauncestonRest = 'http://mapping.launceston.tas.gov.au/arcgis/rest/services/'
+var CityOfLauncestonRest = 'https://mapping.launceston.tas.gov.au/arcgis/rest/services/'
 var CityOfHobartRest = 'https://services1.arcgis.com/NHqdsnvwfSTg42I8/arcgis/rest/services/'
 
 getWMS(GlenorchyWMS, {label: 'glenorchy'})
