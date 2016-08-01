@@ -282,16 +282,16 @@ function addLayerToMap (layer) {
   layer.added = true
   layer.visible = true
 
+  var createdLayer = null
+
   // TODO: Attribution
   if (layer.type === 'esri') {
-    var createdLayer = L.esri.dynamicMapLayer({
+    createdLayer = L.esri.dynamicMapLayer({
       url: layer.url,
       opacity: 1,
       layers: [layer.meta.id],
       id: layer.id
     }).addTo(map)
-
-    overlays[layer.title] = createdLayer
   } else if (layer.type = 'wms') {
     var createdLayer = new L.TileLayer.WMS(layer.url, {
       layers: layer.meta.name,
@@ -300,9 +300,13 @@ function addLayerToMap (layer) {
       maxZoom: 20,
       id: layer.id
     }).addTo(map)
-
-    overlays[layer.title] = createdLayer
   }
+
+  var shortTitle = layer.title
+  if( shortTitle.length > 30 ) {
+    shortTitle = $.trim(shortTitle.substring(0, 25)) + '...' + $.trim(shortTitle.substr(shortTitle.length - 5))
+  }
+  overlays[shortTitle] = createdLayer
 
   map.removeControl(layerControl)
   layerControl = L.control.layers(baseLayers, overlays, {
