@@ -13,6 +13,26 @@ body {
 }
 .data-table tr {
     cursor: pointer;
+    border: lightgrey;
+    border-left-style: solid;
+}
+.data-buttons {
+  position: fixed;
+  right: 10px;
+  padding-right: 10px;
+  margin-bottom: 20px;
+  margin-right: 5px;
+}
+.btn-mini {
+    padding: 6px 12px;
+    font-size: 14px;
+    line-height: 13px;
+}
+.nav {
+  padding-top: 20px;
+}
+.nav li a {
+  padding: 5px 10px;
 }
 #searchclear {
     position: absolute;
@@ -126,7 +146,7 @@ body {
   margin-left: 25px;
 }
 #data-detail {
-    display: block;
+    display: none;
     height: 250px;
     overflow: scroll;
     margin-left: 20px;
@@ -135,6 +155,7 @@ body {
     box-shadow: 0 1px 5px rgba(0,0,0,0.65);
     padding-top: 5px;
     padding-left: 10px;
+
 }
 .has-feedback .form-control-feedback {
   position: absolute;
@@ -156,7 +177,7 @@ body {
 }
 @media (max-width: 767px){
   #data-detail {
-    height:150px;
+    height:200px;
   }
   #sidebar {
     width: 300px;
