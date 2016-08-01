@@ -28,10 +28,14 @@ body {
     font-size: 14px;
     line-height: 13px;
 }
-.nav {
+.table {
+  padding-left: 10px;
+
+}
+#data-tabs {
   padding-top: 20px;
 }
-.nav li a {
+#data-tabs li a {
   padding: 5px 10px;
 }
 #searchclear {
