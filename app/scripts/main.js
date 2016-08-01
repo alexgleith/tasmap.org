@@ -12,6 +12,13 @@ var allSingleLayers = {}
 var debug = false
 var debugLevel = 4
 
+var initialBaseLayer = getParameterByName('baseLayer')
+if(!initialBaseLayer) {
+    initialBaseLayer = 'LIST Topographic';
+} else {
+  initialBaseLayer = initialBaseLayer.replace('-', ' ')
+}
+
 var initialLayers = getParameterByName('layers')
 if(initialLayers != null) {
   initialLayers = initialLayers.split(';')
@@ -66,6 +73,7 @@ $('#data-detail-close-btn').click(function () {
 })
 $('#data-detail-clear-btn').click(function () {
   clearSelectedFeatures()
+  $('#data-detail').hide()
   return false
 })
 
@@ -127,11 +135,16 @@ var LISTAerial = new L.tileLayer('https://services.thelist.tas.gov.au/arcgis/res
   maxZoom: 20,
   maxNativeZoom: 19
 })
+var baseLayers = {
+  'LIST Topographic': LISTTopographic,
+  'LIST Imagery': LISTAerial
+}
+
 
 map = L.map('map', {
   zoom: 8,
   center: [-42.070,146.780],
-  layers: [LISTTopographic],
+  layers: baseLayers[initialBaseLayer],
   zoomControl: true,
   attributionControl: false
 })
@@ -173,11 +186,6 @@ if (document.body.clientWidth <= 767) {
   var isCollapsed = true
 } else {
   var isCollapsed = false
-}
-
-var baseLayers = {
-  'LIST Topographic': LISTTopographic,
-  'LIST Imagery': LISTAerial
 }
 
 var layerControl = L.control.layers(baseLayers, overlays, {
@@ -576,6 +584,27 @@ function setParameter(paramName, paramValue) {
     window.history.replaceState({},"", url + hash);
 }
 
+function removeParameterByName (name, url) {
+  if (!url) url = window.location.href
+  var hash = location.hash
+  url = url.replace(hash, '')
+  var rtn = url.split('?')[0],
+    param,
+    params_arr = [],
+    queryString = (url.indexOf('?') !== -1) ? url.split('?')[1] : ''
+  if (queryString !== '') {
+    params_arr = queryString.split('&')
+    for (var i = params_arr.length - 1; i >= 0; i -= 1) {
+      param = params_arr[i].split('=')[0]
+      if (param === name) {
+        params_arr.splice(i, 1)
+      }
+    }
+    rtn = rtn + '?' + params_arr.join('&')
+  }
+  window.history.replaceState({}, '', rtn + hash)
+}
+
 // Hash the location
 var hash = new L.Hash(map);
 
@@ -608,6 +637,14 @@ map.on('overlayadd', function(e) {
 map.on('overlayremove', function(e) {
     allLayers[e.layer.options.id].visible = false
 });
+
+map.on('baselayerchange', function (e) {
+  if (e.name !== 'LIST Topographic') {
+    setParameter('baseLayer', e.name.replace(' ', '-'))
+  } else {
+    removeParameterByName('baseLayer')
+  }
+})
 
 /* Highlight search box text on click */
 $('#searchbox').click(function () {
