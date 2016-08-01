@@ -87,40 +87,46 @@
         </div>
       </div>
       <div id="map"></div>
-      <footer class="navbar-default navbar-fixed-bottom collapse" style="display:none" id="data-detail">
-        <div class="container-fluid" id="data-container">
-          <div class='btn-toolbar pull-right'>
-            <div class='btn-group'>
-              <button type='button' class='btn btn-default' id='data-detail-clear-btn'>Clear</button>
-              <button type='button' class='btn btn-default' id='data-detail-close-btn'>Close</button>
-            </div>
-          </div>
-          <ul class="nav nav-tabs" id="data-tabs">
-            <li class="active"><a data-toggle="tab" href="#home">Home</a></li>
-            <li><a data-toggle="tab" href="#menu1">Menu 1</a></li>
-            <li><a data-toggle="tab" href="#menu2">Menu 2</a></li>
-          </ul>
-        </div>
-        <div class="tab-content" id=data-tab-contents>
-          <div id="home" class="tab-pane active">
-            <div class="panel panel-default">
-              <div class="table">
-                <table class="table table-condensed table-striped table-hover">
-                  <thead>
-                    <th>Example</th>
-                    <th>Example 2</th>
-                  </thead>
-                  <tbody>
-                  </tbody>
-                </table>
+      <footer class="navbar-default navbar-fixed-bottom collapse" id="data-detail">
+        <div class="row">
+          <div class="container-fluid" id="data-container">
+            <div class='btn-toolbar pull-right data-buttons'">
+              <div class='btn-group'>
+                <button type='button' class='btn btn-default btn-mini' id='data-detail-clear-btn'>Clear</button>
+                <button type='button' class='btn btn-default btn-mini' id='data-detail-close-btn'>Close</button>
               </div>
             </div>
           </div>
-          <div id="menu1" class="tab-pane fade">
-            <h3>Menu 1</h3>
+        </div>
+        <div class="row">
+          <div class="container-fluid" id="data-container">
+            <ul class="nav nav-tabs" id="data-tabs">
+              <li class="active"><a data-toggle="tab" href="#home">Home</a></li>
+              <li><a data-toggle="tab" href="#menu1">Menu 1</a></li>
+              <li><a data-toggle="tab" href="#menu2">Menu 2</a></li>
+            </ul>
           </div>
-          <div id="menu2" class="tab-pane fade">
-            <h3>Menu 2</h3>
+          <div class="tab-content" id=data-tab-contents>
+            <div id="home" class="tab-pane active">
+              <div class="panel panel-default">
+                <div class="table">
+                  <table class="table table-condensed table-striped table-hover">
+                    <thead>
+                      <th>Example</th>
+                      <th>Example 2</th>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div id="menu1" class="tab-pane fade">
+              <h3>Menu 1</h3>
+            </div>
+            <div id="menu2" class="tab-pane fade">
+              <h3>Menu 2</h3>
+            </div>
           </div>
         </div>
       </footer>

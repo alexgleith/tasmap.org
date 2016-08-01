@@ -68,12 +68,12 @@ $('#about-btn').click(function () {
 })
 
 $('#data-detail-close-btn').click(function () {
-  $('#data-detail').hide()
+  $('#data-detail').slideUp()
   return false
 })
 $('#data-detail-clear-btn').click(function () {
   clearSelectedFeatures()
-  $('#data-detail').hide()
+  $('#data-detail').slideUp()
   return false
 })
 
@@ -323,7 +323,7 @@ function addLayerToMap (layer) {
 
 map.on('click', function (e) {
   // Hide the table
-  $("#data-detail").hide()
+  $('#data-detail').slideUp()
 
   // Clear the interface
   $('#data-tabs').empty()
@@ -370,7 +370,7 @@ function handleData(layer, data) {
   }
   addDataToTable(layer.title, layer.id, data.features)
   addDataToMap(data)
-  $("#data-detail").show()
+  $('#data-detail').slideDown()
 }
 
 function getFeatureREST(layer, clickCoords) {
@@ -487,7 +487,7 @@ function addDataToMap(data) {
 }
 
 function openTable() {
-  $('#data-detail').show()
+  $('#data-detail').slideDown()
 }
 
 function highlightLayer(layer) {
@@ -607,6 +607,9 @@ function removeParameterByName (name, url) {
 
 //from http://stackoverflow.com/questions/37684/how-to-replace-plain-urls-with-links
 function linkify(inputText) {
+    if(!inputText) {
+      return
+    }
     var replacedText, replacePattern1, replacePattern2, replacePattern3;
 
     //URLs starting with http://, https://, or ftp://
