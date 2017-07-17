@@ -142,7 +142,6 @@ var baseLayers = {
 
 map = L.map('map', {
   zoom: 8,
-  zoomSnap: 0.5,
   center: [-42.070,146.780],
   layers: baseLayers[initialBaseLayer],
   zoomControl: true,
@@ -374,7 +373,7 @@ function getFeatureREST(layer, clickCoords) {
   })
   .on(map)
   .at([clickCoords.lat, clickCoords.lng])
-  .layers('visible:' + layer.meta.id)
+  .layers('layers=visible:' + layer.meta.id)
   .run(function(error, data, response){
       handleData(layer, data)
   });

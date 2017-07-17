@@ -1,13 +1,13 @@
-deploy:
+make deploy:
 	gulp build
 	aws s3 sync ./dist s3://tasmap.org --acl public-read
 	# This next line is particular to my configuration...
 	aws cloudfront create-invalidation --distribution-id E1ZTC5SR1UEX6W --paths '/*'
 
-run:
+make run:
 	gulp serve
 
-deploy-infrastructure:
+make deploy-infrastructure:
 	AWS_DEFAULT_REGION=ap-southeast-2 \
 	aws cloudformation create-stack \
 		--stack-name tasmap-infrastructure \

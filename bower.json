@@ -5,8 +5,7 @@
     "bootstrap": "~3.3.5",
     "esri-leaflet": "^2.0.1",
     "leaflet.locatecontrol": "^0.52.0",
-    "components-font-awesome": "^4.6.3",
-    "leaflet": "^1.1.0"
+    "components-font-awesome": "^4.6.3"
   },
   "overrides": {
     "bootstrap": {
@@ -24,8 +23,5 @@
   "devDependencies": {
     "chai": "^3.5.0",
     "mocha": "^2.5.3"
-  },
-  "resolutions": {
-    "leaflet": "^1.1.0"
   }
 }
