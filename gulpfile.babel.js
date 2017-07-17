@@ -48,9 +48,9 @@ gulp.task('lint:test', lint('test/spec/**/*.js', testLintOptions));
 gulp.task('html', ['styles', 'scripts'], () => {
   return gulp.src('app/*.html')
     .pipe($.useref({searchPath: ['.tmp', 'app', '.']}))
-    .pipe($.if('*.js', $.uglify()))
-    .pipe($.if('*.css', $.cssnano({zindex: false})))
-    .pipe($.if('*.html', $.htmlmin({collapseWhitespace: true})))
+    .pipe($.if(['*.js'], $.uglify()))
+    .pipe($.if(['*.css'], $.cssnano({zindex: false})))
+    .pipe($.if(['*.html'], $.htmlmin({collapseWhitespace: true})))
     .pipe(gulp.dest('dist'));
 });
 
@@ -74,11 +74,11 @@ gulp.task('leaflet-images', function() {
 });
 
 
-gulp.task('fonts', () => {
-  return gulp.src(require('main-bower-files')('**/*.{eot,svg,ttf,woff,woff2}', function (err) {})
-    .concat('app/fonts/**/*'))
-    .pipe(gulp.dest('.tmp/fonts'))
-    .pipe(gulp.dest('dist/fonts'));
+// Fonts
+gulp.task('fonts', function() {
+    return gulp.src([
+      './bower_components/components-font-awesome/fonts/fontawesome-webfont.*'])
+    .pipe(gulp.dest('dist/fonts/'));
 });
 
 gulp.task('extras', () => {
